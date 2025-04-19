@@ -40,6 +40,7 @@ tab:CreateButton({
             ["rbxassetid://13723395774"] = "Gwa Gwa",
             ["rbxassetid://102445605949594"] = "Lunaris",
             ["rbxassetid://11390783129"] = "Maxwell",
+            ['rbxassetid://13723400256'] = "Doge",
         }
 
         local function simulateKeyPress()
