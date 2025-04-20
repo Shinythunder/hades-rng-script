@@ -140,3 +140,65 @@ tab:CreateButton({
         end
     end,
 })
+
+
+local espEnabled = false
+local espObjects = {}
+
+tab:CreateToggle({
+    Name = "Item ESP",
+    CurrentValue = false,
+    Flag = "ItemESP",
+    Callback = function(Value)
+        espEnabled = Value
+
+        -- Clear old ESPs
+        for _, obj in ipairs(espObjects) do
+            if obj and obj.Parent then
+                obj:Destroy()
+            end
+        end
+        espObjects = {}
+
+        if espEnabled then
+            task.spawn(function()
+                while espEnabled do
+                    local itemsFolder = workspace:FindFirstChild("Items") and workspace.Items:FindFirstChild("Main")
+                    if itemsFolder then
+                        for _, item in pairs(itemsFolder:GetChildren()) do
+                            if item:IsA("BasePart") and item.Name == "Handle" and not item:FindFirstChild("ItemESP") then
+                                local billboard = Instance.new("BillboardGui")
+                                billboard.Name = "ItemESP"
+                                billboard.Adornee = item
+                                billboard.Size = UDim2.new(0, 100, 0, 20)
+                                billboard.AlwaysOnTop = true
+                                billboard.StudsOffset = Vector3.new(0, 2, 0)
+
+                                local label = Instance.new("TextLabel", billboard)
+                                label.Size = UDim2.new(1, 0, 1, 0)
+                                label.Text = "[Item]"
+                                label.BackgroundTransparency = 1
+                                label.TextColor3 = Color3.fromRGB(255, 255, 0)
+                                label.TextStrokeTransparency = 0.5
+                                label.Font = Enum.Font.SourceSansBold
+                                label.TextScaled = true
+
+                                billboard.Parent = item
+                                table.insert(espObjects, billboard)
+                            end
+                        end
+                    end
+                    wait(1.5)
+                end
+
+                -- Clean up after toggle off
+                for _, obj in ipairs(espObjects) do
+                    if obj and obj.Parent then
+                        obj:Destroy()
+                    end
+                end
+                espObjects = {}
+            end)
+        end
+    end,
+})
