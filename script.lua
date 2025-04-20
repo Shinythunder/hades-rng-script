@@ -115,9 +115,10 @@ tab:CreateDropdown({
     MultipleOptions = false,
     Flag = "Dropdown1",
     Callback = function(option)
-        selectedLocation = option
+        selectedLocation = option[1]
     end,
 })
+
 
 tab:CreateButton({
     Name = "Teleport",
