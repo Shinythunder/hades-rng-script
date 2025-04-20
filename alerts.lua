@@ -7,6 +7,7 @@ return function(Rayfield, Window)
         ["Corecility"] = "NO CHANCE LISTED"
     }
 
+    -- Function to send webhook alert
     local function sendWebhook(biomeName, rarity)
         local HttpService = game:GetService("HttpService")
 
@@ -37,6 +38,17 @@ return function(Rayfield, Window)
         else
             warn("Failed to send webhook:", response)
         end
+    end
+
+    -- Test webhook function
+    local function testWebhook()
+        sendWebhook("Test Biome", "1/1000")  -- Using a test biome and rarity for testing
+        Rayfield:Notify({
+            Title = "Webhook Test",
+            Content = "Test webhook has been sent!",
+            Duration = 4.5,
+            Image = 4483362458,
+        })
     end
 
     -- Check for rare biomes and send alerts based on toggle
@@ -70,6 +82,14 @@ return function(Rayfield, Window)
         Callback = function(enabled)
             -- Store the toggle state globally
             _G.RareBiomeAlertEnabled = enabled
+        end,
+    })
+
+    -- Create "Test Webhook" button
+    alertTab:CreateButton({
+        Name = "Test Webhook",
+        Callback = function()
+            testWebhook()  -- Trigger the test webhook
         end,
     })
 
