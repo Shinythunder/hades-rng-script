@@ -176,6 +176,7 @@ teleportsTab:CreateButton({
 })
 
 -- Auto TP to Merchant Toggle
+-- Auto TP to Merchant Toggle
 local autoTPMerchant = false
 
 teleportsTab:CreateToggle({
@@ -192,15 +193,28 @@ teleportsTab:CreateToggle({
                 local hrp = character:WaitForChild("HumanoidRootPart")
 
                 while autoTPMerchant do
-                    local merchant = workspace:FindFirstChild("NPC") and workspace.NPC:FindFirstChild("Merchant")
+                    local npcFolder = workspace:FindFirstChild("NPC")
+                    local merchant = npcFolder and npcFolder:FindFirstChild("Merchant")
 
                     if merchant then
-                        for _, part in pairs(merchant:GetChildren()) do
-                            if not autoTPMerchant then break end
-                            if part:IsA("BasePart") then
-                                hrp.CFrame = part.CFrame + Vector3.new(0, 3, 0)
-                                break
+                        local targetCFrame
+
+                        if merchant:IsA("Model") then
+                            if merchant.PrimaryPart then
+                                targetCFrame = merchant.PrimaryPart.CFrame
+                            else
+                                -- Use first BasePart if PrimaryPart is not set
+                                for _, part in pairs(merchant:GetDescendants()) do
+                                    if part:IsA("BasePart") then
+                                        targetCFrame = part.CFrame
+                                        break
+                                    end
+                                end
                             end
+                        end
+
+                        if targetCFrame then
+                            hrp.CFrame = targetCFrame + Vector3.new(0, 3, 0) -- offset so you don't get stuck
                         end
                     end
 
@@ -210,6 +224,7 @@ teleportsTab:CreateToggle({
         end
     end,
 })
+
 
 -- Optional: TP to all items could go under Items or Teleports. Placing under Items here:
 itemsTab:CreateButton({
