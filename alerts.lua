@@ -42,7 +42,7 @@ return function(Rayfield, Window)
 
     -- Test webhook function
     local function testWebhook()
-        sendWebhook("Test Biome", "1/1000")  -- Using a test biome and rarity for testing
+        sendWebhook("Tesing Webhook!", "")  -- Using a test biome and rarity for testing
         Rayfield:Notify({
             Title = "Webhook Test",
             Content = "Test webhook has been sent!",
