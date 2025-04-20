@@ -22,49 +22,22 @@ local Window = Rayfield:CreateWindow({
     },
 })
 
-local tab = Window:CreateTab("Hade's Scripts", 4483362458)
+-- Tabs
+local itemsTab = Window:CreateTab("Items", 4483362458)
+local teleportsTab = Window:CreateTab("Teleports", 4483362458)
+local settingsTab = Window:CreateTab("Settings", 4483362458)
 
-tab:CreateButton({
-    Name = "Destory GUI",
+-- SETTINGS TAB
+settingsTab:CreateButton({
+    Name = "Destroy GUI",
     Callback = function()
         Rayfield:Destroy()
     end,
 })
 
-tab:CreateButton({
-    Name = "Teleport to All Items",
-    Callback = function()
-        local player = game.Players.LocalPlayer
-        local character = player.Character or player.CharacterAdded:Wait()
-        local initialPosition = character:WaitForChild("HumanoidRootPart").Position
-        local VirtualInputManager = game:GetService("VirtualInputManager")
-
-        local function simulateKeyPress()
-            VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.E, false, game)
-            wait(0.1)
-            VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.E, false, game)
-        end
-
-        local itemsFolder = game.Workspace:FindFirstChild("Items") and game.Workspace.Items:FindFirstChild("Main")
-
-        if itemsFolder then
-            for _, item in pairs(itemsFolder:GetChildren()) do
-                if item.Name ~= "Locations" and item:IsA("BasePart") and item.Name == "Handle" then
-                    character:SetPrimaryPartCFrame(item.CFrame)
-                    wait(0.5)
-                    simulateKeyPress()
-                    wait(0.5)
-                end
-            end
-            character:SetPrimaryPartCFrame(CFrame.new(initialPosition))
-        end
-    end,
-})
-
--- Auto collect toggle
+-- ITEMS TAB
 local autoCollectEnabled = false
-
-tab:CreateToggle({
+itemsTab:CreateToggle({
     Name = "Auto Collect Items",
     CurrentValue = false,
     Flag = "AutoCollectToggle",
@@ -90,7 +63,7 @@ tab:CreateToggle({
                     if itemsFolder then
                         for _, item in pairs(itemsFolder:GetChildren()) do
                             if not autoCollectEnabled then break end
-                            if item.Name ~= "Locations" and item:IsA("BasePart") and item.Name == "Handle" then
+                            if item:IsA("BasePart") and item.Name == "Handle" then
                                 character:SetPrimaryPartCFrame(item.CFrame)
                                 wait(0.5)
                                 simulateKeyPress()
@@ -99,61 +72,23 @@ tab:CreateToggle({
                         end
                         character:SetPrimaryPartCFrame(CFrame.new(initialPosition))
                     end
-                    wait(3) -- Delay between scans
+                    wait(3)
                 end
             end)
         end
     end,
 })
 
--- Dropdown and teleport button (fixed version)
-local selectedLocation = "Koin"
-
-tab:CreateDropdown({
-    Name = "Quick Teleport",
-    Options = {"Koin", "Spawn"},
-    CurrentOption = {"Koin"},
-    MultipleOptions = false,
-    Flag = "Dropdown1",
-    Callback = function(option)
-        selectedLocation = option[1]
-    end,
-})
-
-tab:CreateButton({
-    Name = "Teleport",
-    Callback = function()
-        local coords = {
-            ["Koin"] = Vector3.new(-490.24, 20.07, -545.84),
-            ["Spawn"] = Vector3.new(-430.94, 43.57, -557.68)
-        }
-
-        local player = game.Players.LocalPlayer
-        local character = player.Character or player.CharacterAdded:Wait()
-        local hrp = character:WaitForChild("HumanoidRootPart")
-        local position = coords[selectedLocation]
-
-        if position then
-            print("Teleporting to:", selectedLocation, position)
-            hrp.CFrame = CFrame.new(position)
-        else
-            warn("No coordinates found for:", selectedLocation)
-        end
-    end,
-})
-
-
 local espEnabled = false
 local espObjects = {}
 
-tab:CreateToggle({
+itemsTab:CreateToggle({
     Name = "Item ESP",
     CurrentValue = false,
     Flag = "ItemESP",
     Callback = function(Value)
         espEnabled = Value
 
-        -- Clear old ESPs
         for _, obj in ipairs(espObjects) do
             if obj and obj.Parent then
                 obj:Destroy()
@@ -192,7 +127,6 @@ tab:CreateToggle({
                     wait(1.5)
                 end
 
-                -- Clean up after toggle off
                 for _, obj in ipairs(espObjects) do
                     if obj and obj.Parent then
                         obj:Destroy()
@@ -204,35 +138,47 @@ tab:CreateToggle({
     end,
 })
 
+-- TELEPORTS TAB
 
+-- Quick Teleport Dropdown + Button
+local selectedLocation = "Koin"
 
-tab:CreateButton({
-    Name = "Teleport to Merchant",
+teleportsTab:CreateDropdown({
+    Name = "Quick Teleport",
+    Options = {"Koin", "Spawn"},
+    CurrentOption = {"Koin"},
+    MultipleOptions = false,
+    Flag = "Dropdown1",
+    Callback = function(option)
+        selectedLocation = option[1]
+    end,
+})
+
+teleportsTab:CreateButton({
+    Name = "Teleport",
     Callback = function()
-        local merchant = workspace:FindFirstChild("NPC") and workspace.NPC:FindFirstChild("Merchant")
+        local coords = {
+            ["Koin"] = Vector3.new(-490.24, 20.07, -545.84),
+            ["Spawn"] = Vector3.new(-430.94, 43.57, -557.68)
+        }
+
         local player = game.Players.LocalPlayer
         local character = player.Character or player.CharacterAdded:Wait()
         local hrp = character:WaitForChild("HumanoidRootPart")
+        local position = coords[selectedLocation]
 
-        if merchant then
-            for _, part in pairs(merchant:GetChildren()) do
-                if part:IsA("BasePart") then
-                    hrp.CFrame = part.CFrame + Vector3.new(0, 3, 0) -- teleport slightly above the part
-                    print("Teleported to:", part:GetFullName())
-                    return
-                end
-            end
-            warn("No BasePart found inside Merchant.")
+        if position then
+            hrp.CFrame = CFrame.new(position)
         else
-            warn("Merchant not found.")
+            warn("No coordinates found for:", selectedLocation)
         end
     end,
 })
 
-
+-- Auto TP to Merchant Toggle
 local autoTPMerchant = false
 
-tab:CreateToggle({
+teleportsTab:CreateToggle({
     Name = "Auto TP to Merchant",
     CurrentValue = false,
     Flag = "AutoTPMerchant",
@@ -252,15 +198,47 @@ tab:CreateToggle({
                         for _, part in pairs(merchant:GetChildren()) do
                             if not autoTPMerchant then break end
                             if part:IsA("BasePart") then
-                                hrp.CFrame = part.CFrame + Vector3.new(0, 3, 0) -- teleport above the part
+                                hrp.CFrame = part.CFrame + Vector3.new(0, 3, 0)
                                 break
                             end
                         end
                     end
 
-                    wait(5) -- Adjust interval if needed
+                    wait(5)
                 end
             end)
         end
     end,
 })
+
+-- Optional: TP to all items could go under Items or Teleports. Placing under Items here:
+itemsTab:CreateButton({
+    Name = "Teleport to All Items",
+    Callback = function()
+        local player = game.Players.LocalPlayer
+        local character = player.Character or player.CharacterAdded:Wait()
+        local initialPosition = character:WaitForChild("HumanoidRootPart").Position
+        local VirtualInputManager = game:GetService("VirtualInputManager")
+
+        local function simulateKeyPress()
+            VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.E, false, game)
+            wait(0.1)
+            VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.E, false, game)
+        end
+
+        local itemsFolder = game.Workspace:FindFirstChild("Items") and game.Workspace.Items:FindFirstChild("Main")
+
+        if itemsFolder then
+            for _, item in pairs(itemsFolder:GetChildren()) do
+                if item:IsA("BasePart") and item.Name == "Handle" then
+                    character:SetPrimaryPartCFrame(item.CFrame)
+                    wait(0.5)
+                    simulateKeyPress()
+                    wait(0.5)
+                end
+            end
+            character:SetPrimaryPartCFrame(CFrame.new(initialPosition))
+        end
+    end,
+})
+
