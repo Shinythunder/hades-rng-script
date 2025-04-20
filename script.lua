@@ -8,7 +8,7 @@ Rayfield:Notify({
 })
 
 local Window = Rayfield:CreateWindow({
-    Name = "Hade's RNG lag - By ShinyThunder",
+    Name = "Hade's RNG Scripts - By ShinyThunder",
     Icon = 0, 
     LoadingTitle = "Loading...",
     LoadingSubtitle = "By ShinyThunder",
@@ -22,26 +22,22 @@ local Window = Rayfield:CreateWindow({
     },
 })
 
-local VirtualInputManager = game:GetService("VirtualInputManager")
-
 local tab = Window:CreateTab("Hade's Scripts", 4483362458)
+
+tab:CreateButton({
+    Name = "Destory GUI",
+    Callback = function()
+        Rayfield:Destroy()
+    end,
+})
 
 tab:CreateButton({
     Name = "Teleport to All Items",
     Callback = function()
-
         local player = game.Players.LocalPlayer
         local character = player.Character or player.CharacterAdded:Wait()
         local initialPosition = character:WaitForChild("HumanoidRootPart").Position
-        local itemsFolder = game.Workspace:FindFirstChild("Items")
-
-        local itemMap = {
-            ["rbxassetid://16620005759"] = "Pray",
-            ["rbxassetid://13723395774"] = "Gwa Gwa",
-            ["rbxassetid://102445605949594"] = "Lunaris",
-            ["rbxassetid://11390783129"] = "Maxwell",
-            ['rbxassetid://13723400256'] = "Doge",
-        }
+        local VirtualInputManager = game:GetService("VirtualInputManager")
 
         local function simulateKeyPress()
             VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.E, false, game)
@@ -49,16 +45,15 @@ tab:CreateButton({
             VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.E, false, game)
         end
 
+        local itemsFolder = game.Workspace:FindFirstChild("Items") and game.Workspace.Items:FindFirstChild("Main")
+
         if itemsFolder then
             for _, item in pairs(itemsFolder:GetChildren()) do
-                if item:IsA("BasePart") and item.Name == "Handle" then
-                    local meshId = item.MeshId
-                    if meshId and itemMap[meshId] then
-                        character:SetPrimaryPartCFrame(item.CFrame)
-                        wait(0.5)
-                        simulateKeyPress()
-                        wait(0.5)
-                    end
+                if item.Name ~= "Locations" and item:IsA("BasePart") and item.Name == "Handle" then
+                    character:SetPrimaryPartCFrame(item.CFrame)
+                    wait(0.5)
+                    simulateKeyPress()
+                    wait(0.5)
                 end
             end
             character:SetPrimaryPartCFrame(CFrame.new(initialPosition))
@@ -66,57 +61,77 @@ tab:CreateButton({
     end,
 })
 
+-- Auto collect toggle (right after the teleport-to-all-items button)
+local autoCollectEnabled = false
 
-local Toggle = tab:CreateToggle({
+tab:CreateToggle({
     Name = "Auto Collect Items",
     CurrentValue = false,
-    Flag = "AutoCollectItemsFlag",
+    Flag = "AutoCollectToggle",
     Callback = function(Value)
-        local player = game.Players.LocalPlayer
-        local character = player.Character or player.CharacterAdded:Wait()
+        autoCollectEnabled = Value
 
-        local itemsFolder = game.Workspace:FindFirstChild("Items")
+        if autoCollectEnabled then
+            task.spawn(function()
+                local player = game.Players.LocalPlayer
+                local character = player.Character or player.CharacterAdded:Wait()
+                local hrp = character:WaitForChild("HumanoidRootPart")
+                local VirtualInputManager = game:GetService("VirtualInputManager")
+                local initialPosition = hrp.Position
 
-        local itemMap = {
-            ["rbxassetid://16620005759"] = "Pray",
-            ["rbxassetid://13723395774"] = "Gwa Gwa",
-            ["rbxassetid://102445605949594"] = "Lunaris",
-            ["rbxassetid://11390783129"] = "Maxwell",
-        }
+                local function simulateKeyPress()
+                    VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.E, false, game)
+                    wait(0.1)
+                    VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.E, false, game)
+                end
 
-        local function simulateKeyPress()
-            VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.E, false, game)
-            wait(0.1)
-            VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.E, false, game)
-        end
-
-        local collecting = false
-        local initialPosition
-
-        while true do
-            if Value and not collecting then
-                collecting = true
-                initialPosition = character:WaitForChild("HumanoidRootPart").Position  -- Save initial position
-                while Value do
+                while autoCollectEnabled do
+                    local itemsFolder = workspace:FindFirstChild("Items") and workspace.Items:FindFirstChild("Main")
                     if itemsFolder then
                         for _, item in pairs(itemsFolder:GetChildren()) do
-                            if item:IsA("BasePart") and item.Name == "Handle" then
-                                local meshId = item.MeshId
-                                if meshId and itemMap[meshId] then
-                                    character:SetPrimaryPartCFrame(item.CFrame)
-                                    wait(0.5)
-                                    simulateKeyPress()
-                                    wait(0.5)
-                                end
+                            if not autoCollectEnabled then break end
+                            if item.Name ~= "Locations" and item:IsA("BasePart") and item.Name == "Handle" then
+                                character:SetPrimaryPartCFrame(item.CFrame)
+                                wait(0.5)
+                                simulateKeyPress()
+                                wait(0.5)
                             end
                         end
+                        character:SetPrimaryPartCFrame(CFrame.new(initialPosition))
                     end
-                    wait(1)  -- Delay between each collection cycle
+                    wait(3) -- Delay between scans
                 end
-                character:SetPrimaryPartCFrame(CFrame.new(initialPosition))  -- Return to initial position after collecting
-                collecting = false
-            end
-            wait(0.1)  -- Small wait to prevent the loop from running too fast
+            end)
+        end
+    end,
+})
+
+local selectedLocation = "Koin"
+
+tab:CreateDropdown({
+    Name = "Quick Teleport",
+    Options = {"Koin", "Spawn"},
+    CurrentOption = {"Koin"},
+    MultipleOptions = false,
+    Flag = "Dropdown1",
+    Callback = function(option)
+        selectedLocation = option
+    end,
+})
+
+tab:CreateButton({
+    Name = "Teleport",
+    Callback = function()
+        local coords = {
+            ["Koin"] = Vector3.new(-490.24, 20.07, -545.84),
+            ["Spawn"] = Vector3.new(-430.94, 43.57, -557.68)
+        }
+
+        local player = game.Players.LocalPlayer
+        local position = coords[selectedLocation]
+
+        if position and player and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            player.Character.HumanoidRootPart.CFrame = CFrame.new(position)
         end
     end,
 })
