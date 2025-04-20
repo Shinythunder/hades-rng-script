@@ -7,7 +7,6 @@ return function(Rayfield, Window)
         ["Corecility"] = "NO CHANCE LISTED"
     }
 
-    -- Function to send webhook alert
     local function sendWebhook(biomeName, rarity)
         local HttpService = game:GetService("HttpService")
 
