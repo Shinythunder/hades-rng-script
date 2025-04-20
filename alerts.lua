@@ -1,101 +1,87 @@
 return function(Rayfield, Window)
-    -- Biome and rarity configuration
-    local biomesRarity = {
-        ["Nightmare"] = "1/250",
-        ["Void"] = "1/300",
-        ["Paranoia"] = "NO CHANCE LISTED",
-        ["Corecility"] = "NO CHANCE LISTED"
+local HttpService = game:GetService("HttpService")
+local Players = game:GetService("Players")
+
+-- Rare Biome definitions
+local biomesRarity = {
+    ["Nightmare"] = "1/250",
+    ["Void"] = "1/300",
+    ["Paranoia"] = "NO CHANCE LISTED",
+    ["Corecility"] = "NO CHANCE LISTED"
+}
+
+-- Send webhook with biome info
+local function sendWebhook(biomeName, rarity)
+    local webhookURL = _G.WebhookURL or "https://discord.com/api/webhooks/YOUR_WEBHOOK_URL"
+
+    local embed = {
+        ["title"] = "Rare Biome Spawned!",
+        ["description"] = "A rare biome has spawned: " .. biomeName .. " with a rarity of " .. rarity,
+        ["color"] = 0xFF0000,
+        ["footer"] = {
+            ["text"] = "Roblox Biomes"
+        }
     }
 
-    -- Function to send webhook alert
-    local function sendWebhook(biomeName, rarity)
-        local HttpService = game:GetService("HttpService")
+    local data = {
+        ["embeds"] = {embed}
+    }
 
-        -- Webhook URL loaded from settings (stored globally by settings.lua)
-        local webhookURL = _G.WebhookURL or "https://discord.com/api/webhooks/YOUR_WEBHOOK_URL"  -- Default URL if not set
+    local jsonData = HttpService:JSONEncode(data)
 
-        local embed = {
-            ["title"] = "Rare Biome Spawned!",
-            ["description"] = "A rare biome has spawned: " .. biomeName .. " with a rarity of " .. rarity,
-            ["color"] = 0xFF0000,  -- Red color for the embed
-            ["footer"] = {
-                ["text"] = "Roblox Biomes"
-            }
-        }
+    local success, response = pcall(function()
+        return HttpService:PostAsync(webhookURL, jsonData, Enum.HttpContentType.ApplicationJson)
+    end)
 
-        local data = {
-            ["embeds"] = {embed}
-        }
-
-        local jsonData = HttpService:JSONEncode(data)
-
-        local success, response = pcall(function()
-            return HttpService:PostAsync(webhookURL, jsonData, Enum.HttpContentType.ApplicationJson)
-        end)
-
-        if success then
-            print("Webhook sent successfully!")
-        else
-            warn("Failed to send webhook:", response)
-        end
+    if success then
+        print("Webhook sent successfully!")
+    else
+        warn("Failed to send webhook:", response)
     end
+end
 
-    -- Test webhook function
-    local function testWebhook()
-        sendWebhook("Tesing Webhook!", "")  -- Using a test biome and rarity for testing
-        Rayfield:Notify({
-            Title = "Webhook Test",
-            Content = "Test webhook has been sent!",
-            Duration = 4.5,
-            Image = 4483362458,
-        })
+-- Check if a rare biome is active and send alert
+local function checkRareBiome()
+    if not _G.RareBiomeAlertEnabled then return end
+
+    local player = Players.LocalPlayer
+    local gui = player:WaitForChild("PlayerGui")
+    local biomeCountLabel = gui:WaitForChild("Main"):WaitForChild("Infos"):WaitForChild("Frame")
+        :WaitForChild("Biome"):WaitForChild("Count")
+
+    local biomeName = biomeCountLabel.Text
+
+    if biomesRarity[biomeName] then
+        local rarity = biomesRarity[biomeName]
+        sendWebhook(biomeName, rarity)
     end
+end
 
-    -- Check for rare biomes and send alerts based on toggle
-    local function checkRareBiome()
-        -- Only send alerts if the toggle is enabled
-        if not _G.RareBiomeAlertEnabled then
-            return
-        end
+-- Create Alerts tab
+local alertTab = Window:CreateTab("Alerts", 4483362458)
 
-        local playerGui = game:GetService("Players").LocalPlayer:WaitForChild("PlayerGui")
-        local mainFrame = playerGui:WaitForChild("Main"):WaitForChild("Infos"):WaitForChild("Frame")
-        local biomeFrame = mainFrame:WaitForChild("Biome")
-        local biomeCountLabel = biomeFrame:WaitForChild("Count")
+-- Toggle to enable/disable alerts
+alertTab:CreateToggle({
+    Name = "Rare Biome Alert",
+    CurrentValue = false,
+    Callback = function(enabled)
+        _G.RareBiomeAlertEnabled = enabled
+    end,
+})
 
-        local biomeName = biomeCountLabel.Text
+-- Button to test the webhook
+alertTab:CreateButton({
+    Name = "Test Webhook",
+    Callback = function()
+        sendWebhook("Void", "1/300")
+    end,
+})
 
-        -- Check if the biome name exists in the biomesRarity table
-        if biomesRarity[biomeName] then
-            local rarity = biomesRarity[biomeName]
-            sendWebhook(biomeName, rarity)
-        end
-    end
-
-    -- Create the "Alerts" tab for toggling Rare Biome Alert
-    local alertTab = Window:CreateTab("Alerts", 4483362458)
-
-    -- Toggle for Rare Biome Alert
-    alertTab:CreateToggle({
-        Name = "Rare Biome Alert",
-        CurrentValue = false,  -- Default is off
-        Callback = function(enabled)
-            -- Store the toggle state globally
-            _G.RareBiomeAlertEnabled = enabled
-        end,
-    })
-
-    -- Create "Test Webhook" button
-    alertTab:CreateButton({
-        Name = "Test Webhook",
-        Callback = function()
-            testWebhook()  -- Trigger the test webhook
-        end,
-    })
-
-    -- Run the biome check periodically (you can adjust the interval as needed)
+-- Run biome check in background
+coroutine.wrap(function()
     while true do
         checkRareBiome()
-        wait(10)  -- Adjust the check interval as needed
+        wait(10)
     end
+end)()
 end
