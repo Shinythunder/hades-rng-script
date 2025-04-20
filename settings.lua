@@ -1,4 +1,4 @@
-\return function(Rayfield, Window)
+return function(Rayfield, Window)
     local tab = Window:CreateTab("Settings", 4483362458)
 
     tab:CreateButton({
