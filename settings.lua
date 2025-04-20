@@ -8,7 +8,6 @@ return function(Rayfield, Window)
         end,
     })
 
-    
     local selectedTheme = "Default"
 
     tab:CreateDropdown({
@@ -48,10 +47,16 @@ return function(Rayfield, Window)
             }
 
             local themeIdentifier = themeMap[selectedTheme]
+            
+            -- Check if the theme identifier exists in the map
             if themeIdentifier then
-                Window:ModifyTheme(themeIdentifier)
+                -- If it exists, apply it
+                pcall(function()
+                    Window:ModifyTheme(themeIdentifier)
+                end)
             else
-                warn("Invalid theme selected.")
+                -- If not, warn the user
+                warn("Invalid theme selected: " .. selectedTheme)
             end
         end,
     })
