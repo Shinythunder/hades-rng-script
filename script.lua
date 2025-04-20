@@ -225,6 +225,56 @@ teleportsTab:CreateToggle({
     end,
 })
 
+-- Auto TP to Merchant Toggle
+local autoTPMerchant = false
+
+teleportsTab:CreateToggle({
+    Name = "Auto TP to Merchant",
+    CurrentValue = false,
+    Flag = "AutoTPMerchant",
+    Callback = function(Value)
+        autoTPMerchant = Value
+
+        if autoTPMerchant then
+            task.spawn(function()
+                local player = game.Players.LocalPlayer
+                local character = player.Character or player.CharacterAdded:Wait()
+                local hrp = character:WaitForChild("HumanoidRootPart")
+
+                while autoTPMerchant do
+                    local npcFolder = workspace:FindFirstChild("NPC")
+                    local merchant = npcFolder and npcFolder:FindFirstChild("Merchant")
+
+                    if merchant then
+                        local targetCFrame
+
+                        if merchant:IsA("Model") then
+                            if merchant.PrimaryPart then
+                                targetCFrame = merchant.PrimaryPart.CFrame
+                            else
+                                -- Use first BasePart if PrimaryPart is not set
+                                for _, part in pairs(merchant:GetDescendants()) do
+                                    if part:IsA("BasePart") then
+                                        targetCFrame = part.CFrame
+                                        break
+                                    end
+                                end
+                            end
+                        end
+
+                        if targetCFrame then
+                            hrp.CFrame = targetCFrame + Vector3.new(0, 3, 0) -- offset so you don't get stuck
+                        end
+                    end
+
+                    wait(5)
+                end
+            end)
+        end
+    end,
+})
+
+
 
 -- Optional: TP to all items could go under Items or Teleports. Placing under Items here:
 itemsTab:CreateButton({
