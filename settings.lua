@@ -34,6 +34,7 @@ return function(Rayfield, Window)
     tab:CreateButton({
         Name = "Apply Theme",
         Callback = function()
+            -- Define the correct theme identifiers
             local themeMap = {
                 ["Default"] = "Default",
                 ["Amber Glow"] = "AmberGlow",
@@ -47,10 +48,13 @@ return function(Rayfield, Window)
             }
 
             local themeIdentifier = themeMap[selectedTheme]
+
+            -- Debug: Print out the selected theme
+            print("Selected theme: " .. selectedTheme)
             
             -- Check if the theme identifier exists in the map
             if themeIdentifier then
-                -- If it exists, apply it
+                -- Apply the theme
                 pcall(function()
                     Window:ModifyTheme(themeIdentifier)
                 end)
