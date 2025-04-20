@@ -6,6 +6,7 @@ Rayfield:Notify({
     Image = 4483362458,
 })
 
+
 local Window = Rayfield:CreateWindow({
     Name = "Hade's RNG Scripts - By ShinyThunder",
     Icon = 0, 
