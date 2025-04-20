@@ -1,4 +1,4 @@
-
+return function(Rayfield, Window)
 -- Biome and rarity configuration
 local biomesRarity = {
     ["Nightmare"] = "1/250",
