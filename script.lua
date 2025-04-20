@@ -203,3 +203,64 @@ tab:CreateToggle({
         end
     end,
 })
+
+
+
+tab:CreateButton({
+    Name = "Teleport to Merchant",
+    Callback = function()
+        local merchant = workspace:FindFirstChild("NPC") and workspace.NPC:FindFirstChild("Merchant")
+        local player = game.Players.LocalPlayer
+        local character = player.Character or player.CharacterAdded:Wait()
+        local hrp = character:WaitForChild("HumanoidRootPart")
+
+        if merchant then
+            for _, part in pairs(merchant:GetChildren()) do
+                if part:IsA("BasePart") then
+                    hrp.CFrame = part.CFrame + Vector3.new(0, 3, 0) -- teleport slightly above the part
+                    print("Teleported to:", part:GetFullName())
+                    return
+                end
+            end
+            warn("No BasePart found inside Merchant.")
+        else
+            warn("Merchant not found.")
+        end
+    end,
+})
+
+
+local autoTPMerchant = false
+
+tab:CreateToggle({
+    Name = "Auto TP to Merchant",
+    CurrentValue = false,
+    Flag = "AutoTPMerchant",
+    Callback = function(Value)
+        autoTPMerchant = Value
+
+        if autoTPMerchant then
+            task.spawn(function()
+                local player = game.Players.LocalPlayer
+                local character = player.Character or player.CharacterAdded:Wait()
+                local hrp = character:WaitForChild("HumanoidRootPart")
+
+                while autoTPMerchant do
+                    local merchant = workspace:FindFirstChild("NPC") and workspace.NPC:FindFirstChild("Merchant")
+
+                    if merchant then
+                        for _, part in pairs(merchant:GetChildren()) do
+                            if not autoTPMerchant then break end
+                            if part:IsA("BasePart") then
+                                hrp.CFrame = part.CFrame + Vector3.new(0, 3, 0) -- teleport above the part
+                                break
+                            end
+                        end
+                    end
+
+                    wait(5) -- Adjust interval if needed
+                end
+            end)
+        end
+    end,
+})
