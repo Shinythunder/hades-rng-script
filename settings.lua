@@ -8,6 +8,8 @@ return function(Rayfield, Window)
         end,
     })
 
+    local selectedTheme = "Default"
+
     tab:CreateDropdown({
         Name = "Themes",
         Options = {
@@ -25,6 +27,13 @@ return function(Rayfield, Window)
         MultipleOptions = false,
         Flag = "ThemeSelector",
         Callback = function(option)
+            selectedTheme = option[1]
+        end,
+    })
+
+    tab:CreateButton({
+        Name = "Apply Theme",
+        Callback = function()
             local themeMap = {
                 ["Default"] = "Default",
                 ["Amber Glow"] = "AmberGlow",
@@ -37,9 +46,11 @@ return function(Rayfield, Window)
                 ["Serenity"] = "Serenity",
             }
 
-            local themeIdentifier = themeMap[option[1]]
+            local themeIdentifier = themeMap[selectedTheme]
             if themeIdentifier then
                 Window:ModifyTheme(themeIdentifier)
+            else
+                warn("Invalid theme selected.")
             end
         end,
     })
