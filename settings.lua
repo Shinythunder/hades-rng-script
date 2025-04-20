@@ -1,4 +1,4 @@
-return function(Rayfield, Window)
+\return function(Rayfield, Window)
     local tab = Window:CreateTab("Settings", 4483362458)
 
     tab:CreateButton({
@@ -10,6 +10,7 @@ return function(Rayfield, Window)
 
     local selectedTheme = "Default"
 
+    -- Dropdown for selecting the theme
     tab:CreateDropdown({
         Name = "Themes",
         Options = {
@@ -31,10 +32,11 @@ return function(Rayfield, Window)
         end,
     })
 
+    -- Button to apply the selected theme
     tab:CreateButton({
         Name = "Apply Theme",
         Callback = function()
-            -- Define the correct theme identifiers
+            -- Theme Map
             local themeMap = {
                 ["Default"] = "Default",
                 ["Amber Glow"] = "AmberGlow",
@@ -47,19 +49,24 @@ return function(Rayfield, Window)
                 ["Serenity"] = "Serenity",
             }
 
+            -- Fetch the theme identifier based on selection
             local themeIdentifier = themeMap[selectedTheme]
 
             -- Debug: Print out the selected theme
             print("Selected theme: " .. selectedTheme)
-            
-            -- Check if the theme identifier exists in the map
+
+            -- Ensure the theme identifier is valid
             if themeIdentifier then
-                -- Apply the theme
-                pcall(function()
+                -- Try applying the theme
+                local success, err = pcall(function()
                     Window:ModifyTheme(themeIdentifier)
                 end)
+
+                -- If there was an error, print it
+                if not success then
+                    warn("Failed to apply theme: " .. err)
+                end
             else
-                -- If not, warn the user
                 warn("Invalid theme selected: " .. selectedTheme)
             end
         end,
