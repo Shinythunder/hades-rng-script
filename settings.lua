@@ -8,18 +8,15 @@ return function(Rayfield, Window)
         end,
     })
 
-local Input = Tab:CreateInput({
-   Name = "Webhook URL",
-   CurrentValue = "",  -- Default value is empty
-   PlaceholderText = "Enter your Webhook URL",
-   RemoveTextAfterFocusLost = false,
-   Flag = "WebhookInput",  -- You can use this flag to store the input value
-   Callback = function(Text)
-      -- This will store the value entered in the text box
-      webhookURL = Text
-      print("Webhook URL: " .. webhookURL)  -- Print the webhook URL to the output for debugging
-   end,
-})
-
-    
+    tab:CreateInput({
+        Name = "Webhook URL",
+        CurrentValue = "",
+        PlaceholderText = "Enter your Webhook URL",
+        RemoveTextAfterFocusLost = false,
+        Flag = "WebhookInput",
+        Callback = function(Text)
+            _G.WebhookURL = Text  -- Store globally so other files can access
+            print("Webhook URL set to: " .. _G.WebhookURL)
+        end,
+    })
 end
