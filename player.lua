@@ -3,6 +3,7 @@ return function(Rayfield, Window)
 
     PlayerTab:CreateSection("Movement")
 
+    
     local flying = false
     local flightSpeed = 50 -- Default flight speed
     local flightControl = {Forward = 0, Backward = 0, Left = 0, Right = 0, Up = 0, Down = 0}
