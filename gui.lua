@@ -26,4 +26,4 @@ local Window = Rayfield:CreateWindow({
 loadstring(game:HttpGet("https://raw.githubusercontent.com/Shinythunder/hades-rng-script/refs/heads/main/items.lua"))()(Rayfield, Window)
 loadstring(game:HttpGet("https://raw.githubusercontent.com/Shinythunder/hades-rng-script/refs/heads/main/teleports.lua"))()(Rayfield, Window)
 loadstring(game:HttpGet("https://raw.githubusercontent.com/Shinythunder/hades-rng-script/refs/heads/main/settings.lua"))()(Rayfield, Window)
-
+loadstring(game:HttpGet("https://raw.githubusercontent.com/Shinythunder/hades-rng-script/refs/heads/main/player.lua"))()(Rayfield, Window)
